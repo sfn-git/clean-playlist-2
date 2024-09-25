@@ -1,19 +1,31 @@
 import requests
 import os
 import base64
+from datetime import datetime, timedelta
 
-def get_auth_code_obj(spotify_code=None, refresh_token=None):
-    body = {}
-    body['code'] = refresh_token
-    body['grant_type'] = 'refresh_token'
-    if refresh_token is None:
-        body['code'] = spotify_code
-        body['grant_type'] = 'authorization_code'
+def get_auth_code_obj(spotify_code):
+    if spotify_code is None:
+        return
     url = 'https://accounts.spotify.com/api/token'
     redirect_url = os.getenv('APP_BASE_URL')+'/spotify/auth/callback/'
-    body['redirect_uri'] = redirect_url
+    body = {
+        'redirect_uri': redirect_url,
+        'grant_type': 'authorization_code',
+        'code': spotify_code
+    }
     auth_code_req = requests.post(url, headers=get_header(), data=body)
     return auth_code_req.json()
+
+def get_refresh_token(refresh_token):
+    if refresh_token is None:
+        return
+    url = 'https://accounts.spotify.com/api/token'
+    body = {
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token
+    }
+    return requests.post(url, headers=get_header(), data=body).json()
+
 
 def get_header():
     CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
@@ -28,6 +40,28 @@ def get_token_header(access_token):
         'Authorization': f'Bearer {access_token}'
     }
 
+def time_difference_in_minutes(date):
+    print(date)
+    current_time = datetime.now()
+    print(current_time)
+    difference = date.replace(tzinfo=None) - current_time.replace(tzinfo=None)
+    total_minutes = difference.total_seconds() / 60
+    return total_minutes
+
+def get_expired_date(seconds):
+    current_time = datetime.now()
+    result_time = current_time + timedelta(seconds=seconds)
+    return result_time
+
 def base64_string(string):
     encoded_string = base64.b64encode(string.encode('utf-8'))
     return encoded_string.decode('utf-8')
+
+def check_authentication(session):
+    if session.get('access_token_obj') is None:
+        return None
+    if time_difference_in_minutes(session['access_token_obj']['expire_date']) < 1:
+        session['access_token_obj'] = get_refresh_token(session['access_token_obj']['refresh_token'])
+        session['access_token'] = session['access_token_obj']['access_token']
+        session['access_token_obj']['expire_date'] = get_expired_date(session['access_token_obj']['expires_in'])
+    return True
