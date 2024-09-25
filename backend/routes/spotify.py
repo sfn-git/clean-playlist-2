@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session
-from urllib.parse import urlencode
-from utils.spotify import get_auth_code_obj, get_token_header, get_expired_date, check_authentication
+from urllib.parse import urlencode, quote
+from utils.spotify import get_auth_code_obj, get_token_header, get_expired_date, check_authentication, extract_track, get_track_hash
 from functools import wraps
 import os
 import requests
@@ -24,7 +24,7 @@ def spotify_auth():
             'client_id': os.getenv('SPOTIFY_CLIENT_ID'),
             'response_type': 'code',
             'redirect_uri': redirect_url,
-            'scope': 'playlist-modify-public',
+            'scope': 'playlist-modify-public playlist-modify-private playlist-read-collaborative playlist-read-private',
         }
         spotify_url = 'https://accounts.spotify.com/authorize?' + urlencode(query_parameters)
         return {'status':200, 'message': spotify_url}
@@ -59,7 +59,7 @@ def spotify_logout():
 def all_spotify_playlists():
     page_args = request.args.get("page")
     page = 0
-    if  page_args is not None: page = int(page_args) * 10
+    if  page_args is not None: page = (int(page_args)-1) * 10
     url = f'https://api.spotify.com/v1/me/playlists?offset={page}&limit=10'
     header = get_token_header(session['access_token'])
     playlist_response = requests.get(url, headers=header)
@@ -69,7 +69,70 @@ def all_spotify_playlists():
 @requires_auth
 def get_spotify_playlist(pid):
     url = f'https://api.spotify.com/v1/playlists/{pid}'
-    print(url)
     header = get_token_header(session['access_token'])
     playlist_response = requests.get(url, headers=header)
     return playlist_response.json()
+
+@auth_app.route('/playlists/<pid>/tracks', methods=["GET"])
+@requires_auth
+def get_spotify_playlist_tracks(pid):
+    url = f'https://api.spotify.com/v1/playlists/{pid}/tracks'
+    header = get_token_header(session['access_token'])
+    playlist_track_response = requests.get(url, headers=header).json()
+    return playlist_track_response
+
+@auth_app.route('/tracks/<tid>', methods=["GET"])
+@requires_auth
+def get_spotify_tracks(tid):
+    url = f'https://api.spotify.com/v1/tracks/{tid}'
+    header = get_token_header(session['access_token'])
+    track_response = requests.get(url, headers=header).json()
+    return extract_track(track_response)
+    # return track_response
+
+@auth_app.route('/tracks/<tid>/clean', methods=["GET"])
+@requires_auth
+def search_spotify_clean_tracks(tid):
+    url = f'https://api.spotify.com/v1/tracks/{tid}'
+    header = get_token_header(session['access_token'])
+    track_response = requests.get(url, headers=header).json()
+    if not track_response['explicit']:
+        return track_response
+    current_track_hash = get_track_hash(track_response)
+
+    artist_query = ''
+    for artist in track_response['artists']:
+        artist_query += f"{artist['name']} "
+    search_query = f"{track_response['name']} {artist_query}"
+    search_url = f'https://api.spotify.com/v1/search?q={search_query}&type=track'
+    search_response = requests.get(search_url, headers=header).json()
+    search_response_obj = list()
+    for result in search_response['tracks']['items']:
+        if not result['explicit']:
+            track_hash = get_track_hash(result)
+            search_response_obj.append(extract_track(result))
+            if track_hash == current_track_hash:
+               return extract_track(result)
+    
+    return search_response_obj
+
+# @auth_app.route('/playlists/<pid>/clean', methods=["GET"])
+# @requires_auth
+# def clean_spotify_playlist(pid):
+#     tracks = list()
+#     next = True
+#     first = True
+#     url = ''
+#     while next:
+#         if first:
+#             url = f'https://api.spotify.com/v1/playlists/{pid}/tracks'
+#             first = False
+#         header = get_token_header(session['access_token'])
+#         playlist_track_response = requests.get(url, headers=header).json()
+#         tracks.extend(playlist_track_response['items'])
+#         url = playlist_track_response.get('next')
+#         print(url)
+#         if playlist_track_response['next'] is None:
+#             next = False
+#             continue
+#     return tracks

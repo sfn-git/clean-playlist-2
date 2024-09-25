@@ -1,7 +1,8 @@
+from datetime import datetime, timedelta
+from hashlib import md5
 import requests
 import os
 import base64
-from datetime import datetime, timedelta
 
 def get_auth_code_obj(spotify_code):
     if spotify_code is None:
@@ -41,9 +42,7 @@ def get_token_header(access_token):
     }
 
 def time_difference_in_minutes(date):
-    print(date)
     current_time = datetime.now()
-    print(current_time)
     difference = date.replace(tzinfo=None) - current_time.replace(tzinfo=None)
     total_minutes = difference.total_seconds() / 60
     return total_minutes
@@ -65,3 +64,24 @@ def check_authentication(session):
         session['access_token'] = session['access_token_obj']['access_token']
         session['access_token_obj']['expire_date'] = get_expired_date(session['access_token_obj']['expires_in'])
     return True
+
+def extract_track(track):
+    return {
+        'id': track['id'],
+        'name': track['name'],
+        'url': track['external_urls']['spotify'],
+        'cover_url': track['album']['images'][0],
+        'artist': track['artists'],
+        'explicit': track['explicit'],
+        'album_name': track['album']['name']
+    }
+
+def get_track_hash(track):
+    track_name = track['name']
+    artist_names = ''
+    album_name = track['album']['name']
+    for artist in track['artists']:
+        artist_names += artist['name']
+    track_string = f"{track_name}{artist_names}{album_name}"
+    # print(track_string, track['explicit'])
+    return md5(track_string.encode('utf-8')).hexdigest()

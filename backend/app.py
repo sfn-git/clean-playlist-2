@@ -3,12 +3,17 @@ from routes.index import index_app
 from routes.spotify import auth_app
 from dotenv import load_dotenv
 from secrets import token_hex
-load_dotenv()
+import os
 
+load_dotenv()
 app = Flask(__name__)
 app.register_blueprint(index_app, url_prefix='/')
 app.register_blueprint(auth_app, url_prefix='/spotify')
-app.secret_key = token_hex()
+
+if os.getenv('ENV') == 'prod':
+    app.secret_key = token_hex() #sessions will restart on app reset
+else:
+    app.secret_key = "development" #session will stay
 
 @app.errorhandler(404)
 def page_not_found(error):
