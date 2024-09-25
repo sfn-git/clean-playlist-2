@@ -57,9 +57,9 @@ def spotify_logout():
 @auth_app.route('/playlists', methods=["GET", "PUT"])
 @requires_auth
 def all_spotify_playlists():
-    page = request.args.get("offset")
-    if page is None:
-        page = 0
+    page_args = request.args.get("page")
+    page = 0
+    if  page_args is not None: page = int(page_args) * 10
     url = f'https://api.spotify.com/v1/me/playlists?offset={page}&limit=10'
     header = get_token_header(session['access_token'])
     playlist_response = requests.get(url, headers=header)
