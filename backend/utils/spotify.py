@@ -56,14 +56,14 @@ def base64_string(string):
     encoded_string = base64.b64encode(string.encode('utf-8'))
     return encoded_string.decode('utf-8')
 
-def check_authentication(session):
-    if session.get('access_token_obj') is None:
-        return None
-    if time_difference_in_minutes(session['access_token_obj']['expire_date']) < 1:
-        session['access_token_obj'] = get_refresh_token(session['access_token_obj']['refresh_token'])
-        session['access_token'] = session['access_token_obj']['access_token']
-        session['access_token_obj']['expire_date'] = get_expired_date(session['access_token_obj']['expires_in'])
-    return True
+# def check_authentication(session):
+#     if session.get('access_token_obj') is None:
+#         return None
+#     if time_difference_in_minutes(session['access_token_obj']['expire_date']) < 1:
+#         session['access_token_obj'] = get_refresh_token(session['access_token_obj']['refresh_token'])
+#         session['access_token'] = session['access_token_obj']['access_token']
+#         session['access_token_obj']['expire_date'] = get_expired_date(session['access_token_obj']['expires_in'])
+#     return True
 
 def extract_track(track):
     return {
@@ -85,3 +85,12 @@ def get_track_hash(track):
     track_string = f"{track_name}{artist_names}{album_name}"
     # print(track_string, track['explicit'])
     return md5(track_string.encode('utf-8')).hexdigest()
+
+from datetime import date, datetime
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
