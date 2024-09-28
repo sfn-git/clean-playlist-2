@@ -6,8 +6,13 @@
             <p class="py-6">
                 A tool to help you remove explicit songs from your playlists. Login to your Spotify to view your playlists.
             </p>
-            <a class="btn btn-success my-3 mx-auto" href="http://localhost:8080/spotify/auth">Login to Spotify</a>
+            <a class="btn btn-success my-3 mx-auto" :href="auth_url">Login to Spotify</a>
             </div>
         </div>
     </div>    
 </template>
+
+<script setup>
+import {ref} from 'vue';
+const auth_url = ref(`${import.meta.env.VITE_API_URL}/spotify/auth`);
+</script>

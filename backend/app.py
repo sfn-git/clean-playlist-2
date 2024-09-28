@@ -28,4 +28,4 @@ def page_not_found(error):
     d = {'status': 404, 'message': 'Resource not found.'}
     return d, 404
 
-app.run(port=8080)
+app.run(port=8080, host="0.0.0.0")

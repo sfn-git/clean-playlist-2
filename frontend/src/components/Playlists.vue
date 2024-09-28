@@ -126,7 +126,7 @@ async function getPlaylist(){
     showAllPlaylist.value = false;
     updateLoading(true, "Getting your playlists from Spotify.");
     try{
-        const response = await axios.get(`${process.env.API_URL}/spotify/playlists?page=${page.value}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/spotify/playlists?page=${page.value}`, {
             headers: {
             Authorization: 'Bearer ' + Cookies.get('jwt')
             }
@@ -184,7 +184,7 @@ async function viewPlaylist(playlistID){
         let explicitTracks = [];
         let cleanTracks = [];
         let tracks = [];
-        const response = await axios.get(`${process.env.API_URL}/spotify/playlists/${playlistID}/tracks`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/spotify/playlists/${playlistID}/tracks`, {
             headers: {
             Authorization: 'Bearer ' + Cookies.get('jwt')
             }
@@ -199,7 +199,7 @@ async function viewPlaylist(playlistID){
             counter+=1;
             let trackID = tracks[i]['track']['uri'];
             if(tracks[i]['track']['explicit']){
-                const response = await axios.get(`${process.env.API_URL}/spotify/tracks/${tracks[i]['track']['id']}/clean`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/spotify/tracks/${tracks[i]['track']['id']}/clean`, {
                     headers: {
                     Authorization: 'Bearer ' + Cookies.get('jwt')
                     }
@@ -290,7 +290,7 @@ async function createNewPlaylist(){
             'description': '',
             'ids': sendID
         }
-        const response = await axios.put(`${process.env.API_URL}/spotify/playlists`, sendObj ,{
+        const response = await axios.put(`${import.meta.env.VITE_API_URL}/spotify/playlists`, sendObj ,{
             headers: {
                 Authorization: 'Bearer ' + Cookies.get('jwt')
             }

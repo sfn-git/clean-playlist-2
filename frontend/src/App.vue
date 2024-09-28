@@ -20,7 +20,9 @@ import { onBeforeMount, ref } from 'vue';
  
 const isAuthenticated = ref(false);
 let checkAuth = async () =>{
-  axios.get(`${process.env.API_URL}/spotify/authenticated`, {
+  let url = `${import.meta.env.VITE_API_URL}/spotify/authenticated`
+  console.log(url)
+  axios.get(url, {
     headers: {
       Authorization: 'Bearer ' + Cookies.get('jwt')
     }
