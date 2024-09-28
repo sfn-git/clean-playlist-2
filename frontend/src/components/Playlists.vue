@@ -64,7 +64,8 @@
                                             <img :src="ltems.cover_url.url" width="100px" height="100px">
                                             <div class="flex flex-row items-center my-auto ml-2">
                                                 <p><a :href="ltems.url" target="_blank">{{ltems.name}}</a></p>
-                                                <button class="btn btn-success ml-2" @click="setAlternativeTrack(currentModalID, ltems.id)">Set as Alternative</button>
+                                                <!-- <p><a :href="ltems.url" target="_blank">{{ltems}}</a></p> -->
+                                                <button class="btn btn-success ml-2" @click="setAlternativeTrack(currentModalID, `spotify:track:${ltems.id}`)">Set as Alternative</button>
                                             </div>
                                         </div>
                                     </div>
@@ -125,7 +126,7 @@ async function getPlaylist(){
     showAllPlaylist.value = false;
     updateLoading(true, "Getting your playlists from Spotify.");
     try{
-        const response = await axios.get(`http://localhost:8080/spotify/playlists?page=${page.value}`, {
+        const response = await axios.get(`${process.env.API_URL}/spotify/playlists?page=${page.value}`, {
             headers: {
             Authorization: 'Bearer ' + Cookies.get('jwt')
             }
@@ -160,15 +161,30 @@ function getImgURL(img){
     
 }
 
+function resetSinglePlaylist(){
+
+    singlePlaylistName = ref('');
+    singlePlaylistExplicit = ref({});
+    singlePlaylistClean = ref({});
+    explicitSongs = ref(0);
+    totalSongs = ref(0);
+    newPlaylistSongs = ref([]);
+    showModal = ref(false);
+    modalTracks = ref([]);
+    currentModalID = ref('')
+
+}
+
 async function viewPlaylist(playlistID){
     window.scrollTo(0,0);
     updateLoading(true, 'Please wait, getting playlist info.');
+    resetSinglePlaylist();
     showAllPlaylist.value = false;
     try{
         let explicitTracks = [];
         let cleanTracks = [];
         let tracks = [];
-        const response = await axios.get(`http://localhost:8080/spotify/playlists/${playlistID}/tracks`, {
+        const response = await axios.get(`${process.env.API_URL}/spotify/playlists/${playlistID}/tracks`, {
             headers: {
             Authorization: 'Bearer ' + Cookies.get('jwt')
             }
@@ -181,10 +197,9 @@ async function viewPlaylist(playlistID){
         for(var i in tracks){
             updateLoading(true, `Finding clean versions of songs in ${singlePlaylistName}. Checked ${counter} out of ${totalSongs.value} songs in playlist. Explicit Tracks found: ${explicitSongs.value}`);
             counter+=1;
-            console.log(tracks[i])
             let trackID = tracks[i]['track']['uri'];
             if(tracks[i]['track']['explicit']){
-                const response = await axios.get(`http://localhost:8080/spotify/tracks/${tracks[i]['track']['id']}/clean`, {
+                const response = await axios.get(`${process.env.API_URL}/spotify/tracks/${tracks[i]['track']['id']}/clean`, {
                     headers: {
                     Authorization: 'Bearer ' + Cookies.get('jwt')
                     }
@@ -221,13 +236,12 @@ async function viewPlaylist(playlistID){
         }
         singlePlaylistExplicit.value = explicitTracks;
         singlePlaylistClean.value = cleanTracks;
-        console.log(newPlaylistSongs.value);
     }catch(error){
         console.log(error);
     }
     updateLoading();
     showSinglePlaylist.value = true;
-    console.log(newPlaylistSongs);
+    console.log(newPlaylistSongs.value);
 }
 
 onMounted(async ()=>{
@@ -252,15 +266,17 @@ function closeAltModal(){
 
 function setAlternativeTrack(id, newid){
     let newTrackIndex = newPlaylistSongs.value.findIndex(item => item.oldID === id);
+    console.log(newPlaylistSongs.value[newTrackIndex]);
     newPlaylistSongs.value[newTrackIndex]['newID'] = newid;
     let explicitTrackIndex = singlePlaylistExplicit.value.findIndex(i => i.trackID === id);
     singlePlaylistExplicit.value[explicitTrackIndex].alternative_set = true;
+    console.log(singlePlaylistExplicit.value[explicitTrackIndex]);
     closeAltModal();
 }
 
 async function createNewPlaylist(){
-    console.log('In create playlist');
     if(window.confirm('Create playlist?')){
+        updateLoading(true, ' Please wait, creating your playlist.');
         let sendID = [];
         for(var i in newPlaylistSongs.value){
             console.log(newPlaylistSongs.value[i]);
@@ -268,18 +284,18 @@ async function createNewPlaylist(){
                 sendID.push(newPlaylistSongs.value[i].newID);
             }
         }
+        console.log(sendID);
         let sendObj = {
             'playlist_name': `${singlePlaylistName} - Clean`,
             'description': '',
             'ids': sendID
         }
-        const response = await axios.put('http://localhost:8080/spotify/playlists', sendObj ,{
+        const response = await axios.put(`${process.env.API_URL}/spotify/playlists`, sendObj ,{
             headers: {
                 Authorization: 'Bearer ' + Cookies.get('jwt')
             }
         });
         viewPlaylist(response.data.playlistID);
     }
-    
 }
 </script>

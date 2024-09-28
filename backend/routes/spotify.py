@@ -88,10 +88,10 @@ def all_spotify_playlists():
         url = f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks'
         for i in range(request_num):
             r = requests.post(url, json=new_track_ids[startIndex:endIndex], headers=header)
-            print(r.json())
             tempIndex = endIndex
             startIndex = tempIndex + 1
             endIndex = tempIndex + 100
+        # return {'playlistID': True}, 200
         return {'playlistID': new_playlist_id}, 200
 
 @auth_app.route('/playlists/<pid>', methods=["GET"])

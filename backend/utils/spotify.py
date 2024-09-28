@@ -73,7 +73,8 @@ def extract_track(track):
         'cover_url': track['album']['images'][0],
         'artist': track['artists'],
         'explicit': track['explicit'],
-        'album_name': track['album']['name']
+        'album_name': track['album']['name'],
+        'uri': track['uri']
     }
 
 def get_track_hash(track):
