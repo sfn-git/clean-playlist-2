@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identi
 from datetime import datetime
 import os
 import requests
+import math
 
 auth_app = Blueprint('auth', __name__)
 
@@ -59,13 +60,39 @@ def spotify_authenticated():
 @jwt_required()
 def all_spotify_playlists():
     jwt_data = get_jwt_identity()
-    page_args = request.args.get("page")
-    page = 0
-    if  page_args is not None: page = (int(page_args)-1) * 10
-    url = f'https://api.spotify.com/v1/me/playlists?offset={page}&limit=10'
     header = get_token_header(jwt_data['access_token'])
-    playlist_response = requests.get(url, headers=header)
-    return playlist_response.json()
+    if request.method == 'GET':
+        page_args = request.args.get("page")
+        page = 0
+        if  page_args is not None: page = (int(page_args)-1) * 10
+        url = f'https://api.spotify.com/v1/me/playlists?offset={page}&limit=10'
+        playlist_response = requests.get(url, headers=header)
+        return playlist_response.json()
+    elif request.method == 'PUT':
+        request_data = request.get_json()
+        url = f'https://api.spotify.com/v1/me'
+        r = requests.get(url, headers=header)
+        user_id = r.json()['id']
+        url = f'https://api.spotify.com/v1/users/{user_id}/playlists'
+        playlist_data = {
+            'name': request_data['playlist_name'],
+            'description': request_data['description'],
+            'public': False
+        }
+        r = requests.post(url, json=playlist_data, headers=header)
+        new_playlist_id = r.json()['id']
+        new_track_ids = request_data['ids']
+        request_num = math.ceil(len(new_track_ids) / 100)
+        startIndex = 0
+        endIndex = 100
+        url = f'https://api.spotify.com/v1/playlists/{new_playlist_id}/tracks'
+        for i in range(request_num):
+            r = requests.post(url, json=new_track_ids[startIndex:endIndex], headers=header)
+            print(r.json())
+            tempIndex = endIndex
+            startIndex = tempIndex + 1
+            endIndex = tempIndex + 100
+        return {'playlistID': new_playlist_id}, 200
 
 @auth_app.route('/playlists/<pid>', methods=["GET"])
 @jwt_required()
@@ -111,17 +138,17 @@ def get_spotify_tracks(tid):
 @jwt_required()
 def search_spotify_clean_tracks(tid):
     url = f'https://api.spotify.com/v1/tracks/{tid}'
-    header = get_token_header(session['access_token'])
+    header = get_token_header(get_jwt_identity()['access_token'])
     track_response = requests.get(url, headers=header).json()
     if not track_response['explicit']:
-        return track_response
+        return {'items': track_response, 'exact_match': True}
     current_track_hash = get_track_hash(track_response)
 
     artist_query = ''
     for artist in track_response['artists']:
         artist_query += f"{artist['name']} "
     search_query = f"{track_response['name']} {artist_query}"
-    search_url = f'https://api.spotify.com/v1/search?q={search_query}&type=track'
+    search_url = f'https://api.spotify.com/v1/search?q={search_query}&type=track&limit=5'
     search_response = requests.get(search_url, headers=header).json()
     search_response_obj = list()
     for result in search_response['tracks']['items']:
@@ -129,9 +156,9 @@ def search_spotify_clean_tracks(tid):
             track_hash = get_track_hash(result)
             search_response_obj.append(extract_track(result))
             if track_hash == current_track_hash:
-               return extract_track(result)
+               return {'items': extract_track(result), 'exact_match': True}
     
-    return search_response_obj
+    return {'items': search_response_obj, 'exact_match': False}
 
 # @auth_app.route('/playlists/<pid>/clean', methods=["GET"])
 # @jwt_required()
