@@ -1,11 +1,11 @@
 <template>
-    <div v-if="isAuthenticated">
+    <div class="w-screen" v-if="isAuthenticated">
       <Nav :isAuthenticated="isAuthenticated"></Nav>
-      <div  class="container mx-auto">
+      <div class="container mx-auto">
         <Playlists @updateLoading="updateLoading"></Playlists>
       </div>
     </div>
-    <div v-else class="mt-3"> 
+    <div v-else class="mt-3 w-screen"> 
       <Index></Index>
     </div>
 </template>

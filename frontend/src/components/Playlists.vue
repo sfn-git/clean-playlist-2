@@ -1,7 +1,7 @@
 <template>
     <Loading v-if="showLoading" :message="loadingMessage"></Loading>
-    <div id="all_playlists_view mt-3"  v-if="showAllPlaylist">
-        <p class="text-4xl mt-3">Your Spotify Playlists</p>
+    <div id="all_playlists_view"  v-if="showAllPlaylist">
+        <p class="text-4xl mt-3 text-center md:text-left">Your Spotify Playlists</p>
         <!-- <p v-for="(item, index) in playlists.items" :key="index" v-show="playlists">{{ item.external_urls.spotify }}</p> -->
         <div class="join grid grid-cols-2 my-3">
             <button v-if="page == minPages" class="join-item btn btn-disabled">Previous page</button>
@@ -10,17 +10,20 @@
             <button v-else class="join-item btn btn-outline" @click="nextPage()">Next Page</button>
         </div>
         <p>Pages {{ page }}/{{ maxPages }} (Total of {{ playlists.total }} playlists)</p>
-        <div class="my-3 bg-neutral" v-for="(item, index) in playlists.items" :key="index" v-show="playlists">
-            <div class="flex flex-row" >
+        <div class="my-3 bg-neutral rounded-lg" v-for="(item, index) in playlists.items" :key="index" v-show="playlists">
+            <div class="flex flex-row">
                 <img
                 :src="getImgURL(item.images)"
-                alt="Album" height="200px" width="200px"/>
-                <div class="flex flex-col justify-center ml-3">
-                    <a class="card-title text-2xl" :href="item.external_urls.spotify" target="_blank">{{item.name}}</a>
-                    <p class="text-lg" target="_blank">Created By: <a :href="item.owner.external_urls.spotify">{{ item.owner.display_name }}</a></p>
-                    <p class="text-base my-2">{{item.description}}</p>
-                    <div class="card-actions">
-                    <button class="btn btn-primary" @click="viewPlaylist(item.id)">View Playlist</button>
+                alt="Album" class="w-2/12 h-1/4 md:w-[250px] md:h-[250px] h-rounded-lg"/>
+                <div class="flex flex-row ml-3 my-auto w-full">
+                    <div class="w-1/2">
+                        <a class="card-title text-sm sm:text-2xl" :href="item.external_urls.spotify" target="_blank">{{item.name}}</a>
+                        <p class="text-sm sm:text-lg" target="_blank">Created By: <a :href="item.owner.external_urls.spotify">{{ item.owner.display_name }}</a></p>
+                        <!-- <p class="text-base my-2">{{item.description}}</p> -->
+                    </div>
+                    
+                    <div class="card-actions my-auto ml-auto mr-auto">
+                    <button class="btn md:btn-lg btn-primary" @click="viewPlaylist(item.id)">View Playlist</button>
                 </div>
             </div>
             </div>
@@ -33,39 +36,51 @@
             <button v-else class="join-item btn btn-outline" @click="nextPage()">Next Page</button>
         </div>
     </div>
+    <!-- Single Playlist View -->
     <div id="single_playlist_view " v-if="showSinglePlaylist">
-        
-        <p class="text-4xl">{{singlePlaylistName}}</p>
-        <p>There are {{ explicitSongs }} explicit songs out of {{totalSongs}} in this playlist.</p>
-        <div class="flex mt-3">
-            <button class="btn btn-outline mr-2" @click="getPlaylist()">Back to Playlists</button>
-            <button class="btn btn-success" v-if="explicitSongs>0" @click="createNewPlaylist()">Create Playlist with Matched and Clean Tracks</button>
+        <p class="text-4xl text-center md:text-left">{{singlePlaylistName}}</p>
+        <p class="text-center md:text-left">There are {{explicitSongs}} explicit songs out of {{totalSongs}} in this playlist.</p>
+        <div class="flex mt-3 mx-2 w-full">
+            <button class="btn btn-outline mr-1 w-1/4" @click="getPlaylist()">Back to Playlists</button>
+            <button class="btn btn-success mr-1 text-sm w-1/4" v-if="explicitSongs>0" @click="createNewPlaylist()">Create Playlist</button>
+            <a class="btn btn-success mr-1 text-sm w-1/4 text-ellipsis overflow-hidden" :href="singlePlaylistURL" target="_blank">Open in Spotify</a>
+            <!-- <button class="btn btn-success mr-1 text-sm w-2/12 text-ellipsis overflow-hidden" @click="viewPlaylist()">Refresh</button> -->
         </div>
+        <div class="flex mt-3 ml-2" v-if="explicitSongs>0">
+            <p class="badge badge-error">Explicit</p>
+            <p class="badge badge-secondary ml-2">Exact Match Found</p>
+            <p class="badge badge-info ml-2">Alternative Set</p>
+        </div>
+        
         <div class="mt-3" v-for="(jtems, jndex) in singlePlaylistExplicit">
             <div class="flex flex-row my-2 bg-green-900">
-                <div>
-                    <img :src="getImgURL(jtems.track.track.album.images)" width="100px" height="100px">
-                    <!-- {{ jtems.search_results.length }} -->
-                </div>
-                <div class="flex flex-row items-center ml-3">
-                    <a :href="jtems.track.track.external_urls.spotify" target="_blank" class="card-title">{{ jtems.track.track.name }} - {{ jtems.track.track.artists[0]['name'] }} </a>
-                    <span v-if="jtems.track.track.explicit" class="badge badge-error mx-2">Explicit</span>
-                    <a v-if="jtems.exact_match" class="badge badge-secondary" :href="jtems.search_results.url" target="_blank">Exact Match Found</a>
+                <img :src="getImgURL(jtems.track.track.album.images)" class="w-1/4 h-1/4 md:w-[150px] md:h-[150px]">
+                <div class="flex flex-row items-center ml-2 w-full">
+                    <a :href="jtems.track.track.external_urls.spotify" target="_blank" class="text-sm md:text-lg w-full">
+                        {{ jtems.track.track.name }}
+                        <p class="font-bold">{{jtems.track.track.artists[0]['name']}}</p>
+                    </a>
+                    <p v-if="jtems.track.track.explicit" class="badge badge-error mx-2">E</p>
+                    <a v-if="jtems.exact_match" class="badge badge-secondary text-xs mr-2" :href="jtems.search_results.url" target="_blank">EM</a>
                     <div v-else>
-                        <a v-if="jtems.search_results.length === 0" class="badge badge-neutral">No Alternatives Found</a>
-                        <div v-else>
-                            <button v-if="!jtems.alternative_set" class="btn badge-success" @click="showAltModal(jtems.trackID)" >See Alternatives</button>
-                            <button v-else class="badge badge-secondary">Alternative Set</button>
+                        <div v-if="jtems.search_results.length > 0">
+                            <button v-if="!jtems.alternative_set" class="btn badge-success ml-auto mr-2" @click="showAltModal(jtems.trackID)" >See Alternatives</button>
+                            <button v-else class="badge badge-info mr-2">A</button>
                             <dialog id="my_modal_1" class="modal" :class="{ 'modal-open': showModal }">
                                 <div class="modal-box">
-                                    <h3 class="font-bold text-lg">Alternatives to {{  }}</h3>
+                                    <h3 class="text-lg">Alternatives to <span class="font-bold">{{modalSongName}}</span></h3>
                                     <div class="flex flex-col" v-for="(ltems, jndex) in modalTracks">
                                         <div class="flex flex-row my-2 bg-green-900">
-                                            <img :src="ltems.cover_url.url" width="100px" height="100px">
-                                            <div class="flex flex-row items-center my-auto ml-2">
-                                                <p><a :href="ltems.url" target="_blank">{{ltems.name}}</a></p>
+                                            <img :src="ltems.cover_url.url" class="h-1/4 w-1/4 my-auto">
+                                            <div class="flex flex-row items-center my-auto ml-2 w-full md:w-3/4">
+                                                <a :href="ltems.url" target="_blank">
+                                                    {{ltems.name}}
+                                                    
+                                                    <p class="font-bold">{{ltems.album_name}}</p>
+                                                    <p class="font-bold">{{ltems.artist[0].name}}</p>
+                                                </a>
                                                 <!-- <p><a :href="ltems.url" target="_blank">{{ltems}}</a></p> -->
-                                                <button class="btn btn-success ml-2" @click="setAlternativeTrack(currentModalID, `spotify:track:${ltems.id}`)">Set as Alternative</button>
+                                                <button class="btn btn-success ml-auto mr-2" @click="setAlternativeTrack(currentModalID, `spotify:track:${ltems.id}`)">Set</button>
                                             </div>
                                         </div>
                                     </div>
@@ -83,15 +98,12 @@
             </div>
         </div>
         <div v-for="(ktems, jndex) in singlePlaylistClean">
-            <div class="flex flex-row my-2 bg-green-900">
-                <div>
-                    <img :src="getImgURL(ktems.track.album.images)" width="100px" height="100px">
-                </div>
-                <div class="my-auto">
-                    <a :href="ktems.track.external_urls.spotify" target="_blank" class="card-title ml-2">{{ ktems.track.name }} - {{ ktems.track.artists[0]['name'] }}</a>
-                </div>
-                
-                
+            <div class="flex flex-row items-center my-2 bg-green-900">
+                <img :src="getImgURL(ktems.track.album.images)" class="w-1/4 h-1/4 md:w-[150px] md:h-[150px]">
+                    <a :href="ktems.track.external_urls.spotify" target="_blank" class="text-sm md:text-lg w-full ml-2">
+                        {{ ktems.track.name }}
+                        <p class="font-bold	">{{ ktems.track.artists[0]['name'] }}</p>
+                    </a>
             </div>
         </div>
         <!-- <p>{{singlePlaylist['tracks']}}</p> -->
@@ -113,6 +125,7 @@ let page = ref(1);
 let maxPages = ref(1);
 let minPages = ref(1);
 let singlePlaylistName = ref('');
+let singlePlaylistURL = ref('ref')
 let singlePlaylistExplicit = ref({});
 let singlePlaylistClean = ref({});
 let explicitSongs = ref(0);
@@ -120,7 +133,8 @@ let totalSongs = ref(0);
 let newPlaylistSongs = ref([]);
 let showModal = ref(false);
 let modalTracks = ref([]);
-let currentModalID = ref('')
+let currentModalID = ref('');
+let modalSongName = ref('');
 
 async function getPlaylist(){
     showAllPlaylist.value = false;
@@ -164,6 +178,7 @@ function getImgURL(img){
 function resetSinglePlaylist(){
 
     singlePlaylistName = ref('');
+    singlePlaylistURL = ref('');
     singlePlaylistExplicit = ref({});
     singlePlaylistClean = ref({});
     explicitSongs = ref(0);
@@ -191,6 +206,9 @@ async function viewPlaylist(playlistID){
         });
         tracks = response.data.items;
         singlePlaylistName = response.data.playlist.name;
+        console.log(response.data);
+        singlePlaylistURL.value = response.data.playlist.external_urls.spotify;
+        console.log(response.data);
         explicitSongs.value = 0;
         let counter = 0;
         totalSongs.value = response.data.playlist.tracks.total;
@@ -255,6 +273,8 @@ function updateLoading(status=false, message){
 
 function showAltModal(id){
     let track = singlePlaylistExplicit.value.find(es => es.trackID === id);
+    console.log(track)
+    modalSongName.value = track.track.track.name;
     modalTracks.value = track.search_results;
     showModal.value = !showModal.value;
     currentModalID.value = id;
