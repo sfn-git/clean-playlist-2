@@ -1,0 +1,9 @@
+[submodule "clean-playlists-2-frontend"]
+	path = clean-playlists-2-frontend
+	url = git@github.com:sfn-git/clean-playlist-2-frontend.git
+[submodule "clean-playlist-2-backend"]
+	path = clean-playlist-2-backend
+	url = git@github.com:sfn-git/clean-playlist-2-backend.git
+[submodule "clean-playlist-2-frontend"]
+	path = clean-playlist-2-frontend
+	url = git@github.com:sfn-git/clean-playlist-2-frontend.git
