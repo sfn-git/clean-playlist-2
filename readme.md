@@ -8,7 +8,7 @@ A tool that removes or replaces explicit songs from a Spotify playlist!
 ![Alternative View](photos/alternative-view.png)
 
 ## Background
-This is an application that I had originally developed with the intetions of self hosting and making publicly accessible. After 2 failed spotify application reviews and [the stricter Web API guidelines](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) since I started, I have decided to make this open source and easily self hostable. This is a tool I have been using to make it easier to play music in the car or settings where it would be uncomfortable to play explicit songs. I plan on maintaining this application to the best of my ability and am open to implementing new features.
+This is an application that I had originally developed with the intentions of self hosting and making publicly accessible. After 2 failed spotify application reviews and [the stricter Web API guidelines](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) since I started, I have decided to make this open source and easily self hostable. This is a tool I have been using to make it easier to play music in the car or settings where it would be uncomfortable to play explicit songs. I plan on maintaining this application to the best of my ability and am open to implementing new features.
 
 ## Links
 Backend Repo: https://github.com/sfn-git/clean-playlist-2-backend \
@@ -35,7 +35,7 @@ Frontend Repo: https://github.com/sfn-git/clean-playlist-2-frontend
     - APP_BASE_DOMAIN - Base domain of the backend application. Example `backend.com`        
     - FRONTEND_URL - Where the application redirects to after spotify authentication. Example `https://frontend.com`
     - ENV - Set to `prod` when running for non-development purposes (`dev/prod`)
-- Frontend Enviroment Variable
+- Frontend Environment Variable
     - VITE_API_URL - Base URL of the backend application. You can use the value set in `APP_BASE_URL`
 
 ## Installation
