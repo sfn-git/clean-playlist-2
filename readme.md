@@ -1,4 +1,4 @@
-# Clean-Playlist 2.0
+# ![alt text](photos/favicon.ico) Clean-Playlist 2.0
 
 A tool that removes or replaces explicit songs from a Spotify playlist!
 
@@ -9,6 +9,10 @@ A tool that removes or replaces explicit songs from a Spotify playlist!
 
 ## Background
 This is an application that I had originally developed with the intetions of self hosting and making publicly accessible. After 2 failed spotify application reviews and [the stricter Web API guidelines](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) since I started, I have decided to make this open source and easily self hostable. This is a tool I have been using to make it easier to play music in the car or settings where it would be uncomfortable to play explicit songs. I plan on maintaining this application to the best of my ability and am open to implementing new features.
+
+## Links
+Backend Repo: https://github.com/sfn-git/clean-playlist-2-backend \
+Frontend Repo: https://github.com/sfn-git/clean-playlist-2-frontend
 
 ## Requirements
 - A domain name and the ability to serve the application using HTTPs. This is due to stricter requirements from Spotify's API. I have not yet tested local ips to the point of creating documentation for it but I will add that in the future.
