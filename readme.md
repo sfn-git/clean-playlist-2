@@ -13,7 +13,7 @@ This is an application that I had originally developed with the intetions of sel
 ## Requirements
 - A domain name and the ability to serve the application using HTTPs. This is due to stricter requirements from Spotify's API. I have not yet tested local ips to the point of creating documentation for it but I will add that in the future.
 - Spotify account with some playlists added. The playlist do not need to be your but you need to add them to your library.
-- Spotify Developer Account Setup (Updated December 25th, 2025)
+- Spotify Developer Account Setup
     - Go to https://developer.spotify.com/ and login with your Spotify account
     - After logging in, navigate to https://developer.spotify.com/dashboard
     - Click "Create app"
@@ -36,14 +36,14 @@ This is an application that I had originally developed with the intetions of sel
 
 ## Installation
 - Docker Compose
-    - Copy the docker-compose.yaml file and adjust the variables. [See Configuration](#configuration)
+    - Copy the [docker-compose.yaml](https://raw.githubusercontent.com/sfn-git/clean-playlist-2/refs/heads/main/docker-compose.yaml) file and adjust the variables as needed. [See Configuration](#configuration)
 - Docker Run
     - Backend 
     ```
     docker run \
         -p 8080:8080 \
-        -e SPOTIFY_CLIENT_ID='###' \
-        -e SPOTIFY_CLIENT_SECRET='###' \
+        -e SPOTIFY_CLIENT_ID='' \
+        -e SPOTIFY_CLIENT_SECRET='' \
         -e APP_BASE_URL='' \
         -e APP_BASE_DOMAIN='' \
         -e FRONTEND_URL='' \
@@ -55,7 +55,7 @@ This is an application that I had originally developed with the intetions of sel
     ```
     docker run \
         -p 8081:8080 \
-        -e VITE_API_URL='###' \
+        -e VITE_API_URL='' \
         --name clean-playlist-frontend \
         ghcr.io/sfn-git/clean-playlist-2-frontend:main
     ```
